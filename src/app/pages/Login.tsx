@@ -87,6 +87,7 @@ export function Login() {
           <p className="text-muted-foreground">¿No tienes cuenta?</p>
           <button
             type="button"
+            onClick={() => navigate("/register")}
             className="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary rounded px-2 py-1"
           >
             Registrarse

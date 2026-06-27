@@ -9,6 +9,9 @@ import { Profile } from "./pages/Profile";
 import { Confirmation } from "./pages/Confirmation";
 import { Offline } from "./pages/Offline";
 import { Layout } from "./components/Layout";
+import { Register } from "./pages/Register";
+import { ForgotPassword } from "./pages/ForgotPassword";
+import { ResetPassword } from "./pages/ResetPassword";
 
 export const router = createBrowserRouter([
   {
@@ -19,6 +22,18 @@ export const router = createBrowserRouter([
     path: "/login",
     element: <Login />,
   },
+  {
+  path: "/register",
+  element: <Register />,
+},
+{
+  path: "/forgot-password",
+  element: <ForgotPassword />,
+},
+{
+  path: "/reset-password",
+  element: <ResetPassword />,
+},
   {
     path: "/app",
     element: <Layout />,
