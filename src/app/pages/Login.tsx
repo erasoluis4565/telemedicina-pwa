@@ -76,6 +76,7 @@ export function Login() {
           <div className="mt-6 text-center">
             <button
               type="button"
+              onClick={() => navigate("/forgot-password")}
               className="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary rounded px-2 py-1"
             >
               ¿Olvidaste tu contraseña?
