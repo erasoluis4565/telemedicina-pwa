@@ -5,6 +5,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { Button } from "../components/Button";
 import { Input } from "../components/Input";
 import { Card } from "../components/Card";
+import { registrar } from "../../services/auth.service";
 
 import logo from "../components/assets/logo.png";
 
@@ -24,14 +25,61 @@ export function Register() {
     confirmPassword: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (
+    e: React.FormEvent
+  ) => {
+
     e.preventDefault();
 
-    // Aquí luego conectaremos el backend
+    if (
+      formData.password !==
+      formData.confirmPassword
+    ) {
 
-    alert("Cuenta creada correctamente");
+      alert(
+        "Las contraseñas no coinciden."
+      );
 
-    navigate("/login");
+      return;
+    }
+
+    try {
+
+      await registrar({
+
+        nombre: formData.nombre,
+
+        apellido: formData.apellido,
+
+        telefono: formData.telefono,
+
+        fechaNacimiento:
+          formData.fechaNacimiento,
+
+        email: formData.email,
+
+        password: formData.password,
+
+      });
+
+      alert(
+        "Cuenta creada correctamente."
+      );
+
+      navigate("/login");
+
+    } catch (error: any) {
+
+      alert(
+
+        error.response?.data?.mensaje ??
+
+        "No fue posible crear la cuenta."
+
+      );
+
+    }
+
   };
 
   return (

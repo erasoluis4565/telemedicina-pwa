@@ -1,28 +1,64 @@
 import { User, Mail, Phone, MapPin, Calendar, Edit, Shield, Bell, HelpCircle } from "lucide-react";
 import { Button } from "../components/Button";
 import { Card, CardHeader, CardTitle, CardContent } from "../components/Card";
+import { useEffect, useState } from "react";
+import { obtenerPerfil } from "../../services/usuario.service";
 
 export function Profile() {
-  const userInfo = {
-    name: "Juan Pérez García",
-    email: "juan.perez@email.com",
-    phone: "+52 55 1234 5678",
-    birthDate: "15 de Marzo de 1955",
-    address: "Calle Principal #123, Col. Centro, Ciudad de México",
-    bloodType: "O+",
-    allergies: "Penicilina",
-    emergencyContact: {
-      name: "María Pérez",
-      relation: "Hija",
-      phone: "+52 55 8765 4321",
-    },
+  const [userInfo, setUserInfo] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  const cargarPerfil = async () => {
+
+    try {
+
+      const usuario = await obtenerPerfil();
+
+      setUserInfo(usuario);
+
+    } catch (error) {
+
+      console.error(error);
+
+    } finally {
+      setLoading(false);
+    }
+
   };
+
+  useEffect(() => {
+
+    cargarPerfil();
+
+  }, []);
+
+  if (!userInfo) {
+
+    return null;
+
+  }
 
   const settings = [
     { icon: Bell, label: "Notificaciones", description: "Gestionar alertas y recordatorios" },
     { icon: Shield, label: "Privacidad y Seguridad", description: "Configurar datos privados" },
     { icon: HelpCircle, label: "Ayuda y Soporte", description: "Preguntas frecuentes" },
   ];
+
+  if (loading) {
+
+    return (
+
+      <div className="flex justify-center items-center py-20">
+
+        <p className="text-muted-foreground">
+          Cargando perfil...
+        </p>
+
+      </div>
+
+    );
+
+  }
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
@@ -39,7 +75,7 @@ export function Profile() {
             <User size={56} className="text-primary" strokeWidth={2.5} />
           </div>
           <div className="flex-1 text-center sm:text-left">
-            <h2 className="mb-2">{userInfo.name}</h2>
+            <h2 className="mb-2">{userInfo.nombre} {userInfo.apellido}</h2>
             <div className="space-y-3 text-muted-foreground">
               <div className="flex items-center justify-center sm:justify-start gap-2">
                 <Mail size={20} />
@@ -47,11 +83,13 @@ export function Profile() {
               </div>
               <div className="flex items-center justify-center sm:justify-start gap-2">
                 <Phone size={20} />
-                <span>{userInfo.phone}</span>
+                <span>{userInfo.telefono}</span>
               </div>
               <div className="flex items-center justify-center sm:justify-start gap-2">
                 <Calendar size={20} />
-                <span>{userInfo.birthDate}</span>
+                <span>{new Date(
+                  userInfo.fechaNacimiento
+                ).toLocaleDateString("es-ES")}</span>
               </div>
             </div>
           </div>
@@ -60,61 +98,6 @@ export function Profile() {
             Editar
           </Button>
         </div>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Información Médica</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="p-4 bg-muted rounded-xl">
-              <p className="text-muted-foreground mb-2">Tipo de Sangre</p>
-              <p className="text-destructive">{userInfo.bloodType}</p>
-            </div>
-            <div className="p-4 bg-muted rounded-xl">
-              <p className="text-muted-foreground mb-2">Alergias</p>
-              <p className="text-destructive">{userInfo.allergies}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Dirección</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-start gap-3 text-muted-foreground">
-            <MapPin size={24} className="flex-shrink-0 mt-1" />
-            <p>{userInfo.address}</p>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Contacto de Emergencia</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div>
-              <p className="text-muted-foreground mb-1">Nombre</p>
-              <p>{userInfo.emergencyContact.name}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground mb-1">Relación</p>
-              <p>{userInfo.emergencyContact.relation}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground mb-1">Teléfono</p>
-              <p className="flex items-center gap-2">
-                <Phone size={20} />
-                {userInfo.emergencyContact.phone}
-              </p>
-            </div>
-          </div>
-        </CardContent>
       </Card>
 
       <div>
