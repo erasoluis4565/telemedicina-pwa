@@ -1,27 +1,48 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { Button } from "../components/Button";
 import { Card, CardHeader, CardTitle, CardContent } from "../components/Card";
+import { obtenerMedicos } from "../../services/medico.service";
+import { crearCita } from "../../services/cita.service";
+import { obtenerHorariosDisponibles } from "../../services/cita.service";
+
 
 export function BookAppointment() {
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [selectedDoctor, setSelectedDoctor] = useState<number | null>(null);
+  const [selectedDoctor, setSelectedDoctor] = useState<string | null>(null);
+  const [availableTimes, setAvailableTimes] = useState<string[]>([]);
+  const [doctors, setDoctors] = useState<any[]>([]);
+  const [motivo, setMotivo] = useState("");
 
-  const doctors = [
-    { id: 1, name: "Dr. María González", specialty: "Medicina General" },
-    { id: 2, name: "Dr. Carlos Ramírez", specialty: "Cardiología" },
-    { id: 3, name: "Dra. Ana Martínez", specialty: "Geriatría" },
-  ];
-
-  const availableTimes = [
-    "9:00 AM", "10:00 AM", "11:00 AM",
-    "2:00 PM", "3:00 PM", "4:00 PM",
-  ];
+  
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
+
+  useEffect(() => {
+
+    const cargarMedicos = async () => {
+
+      try {
+
+        const respuesta =
+          await obtenerMedicos();
+
+        setDoctors(respuesta);
+
+      } catch (error) {
+
+        console.error(error);
+
+      }
+
+    };
+
+    cargarMedicos();
+
+  }, []);
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
@@ -55,6 +76,73 @@ export function BookAppointment() {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1));
   };
 
+  useEffect(() => {
+
+    const cargarMedicos = async () => {
+
+      try {
+
+        const medicos =
+          await obtenerMedicos();
+
+        setDoctors(medicos);
+
+      } catch (error) {
+
+      console.error(error);
+
+      }
+
+    };
+
+    cargarMedicos();
+
+  }, []);
+
+  useEffect(() => {
+
+    const cargarHorarios = async () => {
+
+      if (!selectedDoctor || !selectedDate)
+        return;
+
+      try {
+
+       const fecha =
+        selectedDate
+          .toISOString()
+          .split("T")[0];
+
+        const horarios =
+          await obtenerHorariosDisponibles(
+            String(selectedDoctor),
+            fecha
+        );
+
+        console.log(
+          "Horarios:",
+          horarios
+        );
+
+        setAvailableTimes(
+          horarios
+        );
+
+      } catch (error) {
+        
+        console.error(error);
+
+      }
+
+    };
+
+    cargarHorarios();
+
+  }, [
+    selectedDoctor,
+    selectedDate,
+  ]);
+
   const isSameDay = (date1: Date | null, date2: Date | null) => {
     if (!date1 || !date2) return false;
     return (
@@ -64,24 +152,62 @@ export function BookAppointment() {
     );
   };
 
-  const handleConfirm = () => {
-    if (selectedDate && selectedTime && selectedDoctor) {
-      navigate("/app/confirmation", {
-        state: {
-          doctor: doctors.find((d) => d.id === selectedDoctor),
-          date: selectedDate.toLocaleDateString("es-ES", {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          }),
-          time: selectedTime,
-        },
-      });
-    }
+  const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+  const esFechaPasada = (fecha: Date) => {
+    const comparar = new Date(fecha);
+    comparar.setHours(0, 0, 0, 0);
+
+    return comparar < hoy;
   };
 
-  const isFormComplete = selectedDate && selectedTime && selectedDoctor;
+  const handleConfirm = async () => {
 
+    if (
+      !selectedDoctor ||
+      !selectedDate ||
+      !selectedTime
+    ) return;
+
+    try {
+
+      await crearCita({
+
+        medicoId: selectedDoctor,
+
+        fecha: selectedDate
+          .toISOString()
+          .split("T")[0],
+
+        hora: selectedTime,
+
+        motivo,
+
+      });
+
+      alert(
+        "Cita agendada correctamente."
+      );
+
+      navigate("/app/appointments");
+
+    } catch (error: any) {
+
+      alert(
+
+        error.response?.data?.mensaje ??
+
+        "No fue posible agendar la cita."
+
+      );
+
+    }
+
+  };
+
+  const isFormComplete = selectedDate && selectedTime && selectedDoctor && motivo.trim();
+  
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
       <div>
@@ -97,13 +223,13 @@ export function BookAppointment() {
           <div className="grid grid-cols-1 gap-4">
             {doctors.map((doctor) => (
               <button
-                key={doctor.id}
-                onClick={() => setSelectedDoctor(doctor.id)}
+                key={doctor._id}
+                onClick={() => setSelectedDoctor(doctor._id)}
                 className={`
                   p-6 rounded-xl border-2 transition-all duration-200 text-left
                   focus:outline-none focus:ring-4 focus:ring-primary/30
                   ${
-                    selectedDoctor === doctor.id
+                    selectedDoctor === doctor._id
                       ? "border-primary bg-primary/5"
                       : "border-border hover:border-primary/50 hover:bg-muted"
                   }
@@ -111,10 +237,10 @@ export function BookAppointment() {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="mb-1">{doctor.name}</h3>
-                    <p className="text-muted-foreground">{doctor.specialty}</p>
+                    <h3 className="mb-1">Dr. {doctor.usuarioId.nombre} {doctor.usuarioId.apellido}</h3>
+                    <p className="text-muted-foreground">{doctor.especialidad}</p>
                   </div>
-                  {selectedDoctor === doctor.id && (
+                  {selectedDoctor === doctor._id && (
                     <div className="flex-shrink-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                       <Check size={20} className="text-primary-foreground" strokeWidth={3} />
                     </div>
@@ -124,6 +250,25 @@ export function BookAppointment() {
             ))}
           </div>
         </CardContent>
+
+      </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>
+               Motivo de la consulta
+            </CardTitle>
+         </CardHeader>
+
+         <CardContent>
+            <textarea
+              value={motivo}
+              onChange={(e) =>
+              setMotivo(e.target.value)
+              }
+              placeholder="Describe brevemente el motivo de tu consulta..."
+              className="w-full border rounded-xl p-4 min-h-[120px] resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </CardContent>
       </Card>
 
       <Card>
@@ -168,16 +313,16 @@ export function BookAppointment() {
                 <button
                   key={index}
                   onClick={() => day && setSelectedDate(day)}
-                  disabled={!day || day < new Date()}
+                  disabled={!day || esFechaPasada(day)}
                   className={`
                     min-h-[56px] rounded-xl transition-all duration-200
                     focus:outline-none focus:ring-4 focus:ring-primary/30
                     ${!day ? "invisible" : ""}
-                    ${day && day < new Date() ? "text-muted-foreground/30 cursor-not-allowed" : ""}
+                    ${day && esFechaPasada(day)? "text-muted-foreground/30 cursor-not-allowed": ""}
                     ${
                       day && isSameDay(day, selectedDate)
                         ? "bg-primary text-primary-foreground"
-                        : day && day >= new Date()
+                        : day && !esFechaPasada(day)
                         ? "hover:bg-muted border-2 border-border"
                         : ""
                     }

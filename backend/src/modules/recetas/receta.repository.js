@@ -1,20 +1,23 @@
-const Cita = require("./cita.model");
+const Receta = require("./receta.model");
 
 const obtenerTodas = async () => {
-  return await Cita.find()
+
+  return await Receta.find()
     .populate("pacienteId", "nombre apellido email")
     .populate({
       path: "medicoId",
       populate: {
         path: "usuarioId",
-        select: "nombre apellido correo",
+        select: "nombre apellido email",
       },
-    });
+    })
+    .populate("citaId");
+
 };
 
 const obtenerPorPaciente = async (pacienteId) => {
 
-  return await Cita.find({
+  return await Receta.find({
     pacienteId,
   })
     .populate("pacienteId", "nombre apellido email")
@@ -25,13 +28,16 @@ const obtenerPorPaciente = async (pacienteId) => {
         select: "nombre apellido email",
       },
     })
+    .populate("citaId")
     .sort({
-      fecha: 1,
+      createdAt: -1,
     });
+
 };
 
 const obtenerPorId = async (id) => {
-  return await Cita.findById(id)
+
+  return await Receta.findById(id)
     .populate("pacienteId", "nombre apellido email")
     .populate({
       path: "medicoId",
@@ -39,15 +45,18 @@ const obtenerPorId = async (id) => {
         path: "usuarioId",
         select: "nombre apellido email",
       },
-    });
+    })
+    .populate("citaId");
+
 };
 
 const crear = async (data) => {
-  return await Cita.create(data);
+  return await Receta.create(data);
 };
 
 const actualizar = async (id, data) => {
-  return await Cita.findByIdAndUpdate(
+
+  return await Receta.findByIdAndUpdate(
     id,
     data,
     {
@@ -55,44 +64,15 @@ const actualizar = async (id, data) => {
       runValidators: true,
     }
   );
+
 };
 
 const eliminar = async (id) => {
-  return await Cita.findByIdAndDelete(id);
+  return await Receta.findByIdAndDelete(id);
 };
 
-const buscarCitaDuplicada = async (
-  medicoId,
-  fecha,
-  hora
-) => {
-  return await Cita.findOne({
-    medicoId,
-    fecha,
-    hora,
-    estado: {
-      $in: ["PENDIENTE", "CONFIRMADA"],
-    },
-  });
-};
-
-const obtenerHorariosOcupados = async (
-  medicoId,
-  fecha
-) => {
-
-  return await Cita.find({
-    medicoId,
-    fecha,
-    estado: {
-      $in: [
-        "PENDIENTE",
-        "CONFIRMADA",
-        "COMPLETADA"
-      ]
-    }
-  }).select("hora");
-
+const obtenerPorCita = async (citaId) => {
+  return await Receta.findOne({ citaId });
 };
 
 module.exports = {
@@ -102,6 +82,5 @@ module.exports = {
   crear,
   actualizar,
   eliminar,
-  buscarCitaDuplicada,
-  obtenerHorariosOcupados,
+  obtenerPorCita,
 };

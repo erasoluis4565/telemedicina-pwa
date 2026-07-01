@@ -13,6 +13,12 @@ router.get(
 );
 
 router.get(
+  "/perfil",
+  verificarToken,
+  controller.perfil
+);
+
+router.get(
     "/:id",
     verificarToken,
     controller.obtenerPorId

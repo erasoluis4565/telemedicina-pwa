@@ -1,15 +1,20 @@
 const router = require("express").Router();
 
-const controller = require("./cita.controller");
+const controller = require("./receta.controller");
 
 const verificarToken = require("../../middlewares/auth.middleware");
+
 const verificarRol = require("../../middlewares/roles.middleware");
-const validarCampos = require("../../middlewares/validation.middleware");
 
 const {
-  crearCitaValidation,
-} = require("./cita.validation");
+  crearRecetaValidation,
+} = require("./receta.validation");
 
+const validarCampos = require(
+  "../../middlewares/validation.middleware"
+);
+
+// Obtener todas las recetas
 router.get(
   "/",
   verificarToken,
@@ -17,38 +22,37 @@ router.get(
 );
 
 router.get(
-  "/mis-citas",
+  "/mis-recetas",
   verificarToken,
-  controller.misCitas
+  controller.misRecetas
 );
 
-router.get(
-  "/disponibles",
-  controller.obtenerHorariosDisponibles
-);
-
+// Obtener una receta por ID
 router.get(
   "/:id",
   verificarToken,
   controller.obtenerPorId
 );
 
+// Crear receta (solo MÉDICO y ADMIN)
 router.post(
   "/",
   verificarToken,
-  verificarRol("PACIENTE", "ADMIN"),
-  crearCitaValidation,
+  verificarRol("MEDICO", "ADMIN"),
+  crearRecetaValidation,
   validarCampos,
   controller.crear
 );
 
+// Actualizar receta
 router.put(
   "/:id",
   verificarToken,
-  verificarRol("PACIENTE", "MEDICO", "ADMIN"),
+  verificarRol("MEDICO", "ADMIN"),
   controller.actualizar
 );
 
+// Eliminar receta
 router.delete(
   "/:id",
   verificarToken,

@@ -34,6 +34,24 @@ const listar = async (req, res, next) => {
   }
 };
 
+const misCitas = async (req, res, next) => {
+
+  try {
+
+    const citas = await service.listarMisCitas(
+      req.usuario.id
+    );
+
+    res.json({
+      data: citas,
+    });
+
+  } catch (error) {
+    next(error);
+  }
+
+};
+
 const obtenerPorId = async (req, res, next) => {
 
   try {
@@ -94,10 +112,43 @@ const eliminar = async (req, res, next) => {
 
 };
 
+const obtenerHorariosDisponibles = async (
+  req,
+  res,
+  next
+) => {
+
+  try {
+
+    const {
+      medicoId,
+      fecha,
+    } = req.query;
+
+    const horarios =
+      await service.obtenerHorariosDisponibles(
+        medicoId,
+        fecha
+      );
+
+    res.json({
+      data: horarios,
+    });
+
+  } catch (error) {
+
+    next(error);
+
+  }
+
+};
+
 module.exports = {
   crear,
   listar,
+  misCitas,
   obtenerPorId,
   actualizar,
   eliminar,
+  obtenerHorariosDisponibles,
 };

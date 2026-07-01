@@ -4,20 +4,49 @@ import { Eye, EyeOff } from "lucide-react";
 import { Button } from "../components/Button";
 import { Input } from "../components/Input";
 import { Card } from "../components/Card";
+import { login } from "../../services/auth.service";
+import { guardarSesion } from "../../utils/auth";
 import logo from "../components/assets/logo.png";
 
 export function Login() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (
+  e: React.FormEvent
+) => {
+
+  e.preventDefault();
+
+  try {
+
+    const respuesta = await login({
+      email: formData.email,
+      password: formData.password,
+    });
+
+    guardarSesion(
+      respuesta.token,
+      respuesta.usuario
+    );
+
     navigate("/app");
-  };
+
+  } catch (error: any) {
+
+    alert(
+      error.response?.data?.mensaje ??
+      "Error al iniciar sesión."
+    );
+
+  }
+
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary/5 to-secondary/5 flex items-center justify-center px-4 py-8">
@@ -71,6 +100,14 @@ export function Login() {
             <Button type="submit" size="xl" className="w-full mt-8">
               Ingresar
             </Button>
+
+            {
+              error && (
+                <p className="text-red-500 text-center text-sm">
+                   {error}
+                </p>
+              )
+            }
           </form>
 
           <div className="mt-6 text-center">

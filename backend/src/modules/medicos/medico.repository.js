@@ -29,10 +29,15 @@ const eliminar = async (id) => {
   return await Medico.findByIdAndDelete(id);
 };
 
+const obtenerPorUsuarioId = async (usuarioId) => {
+  return await Medico.findOne({ usuarioId });
+};
+
 module.exports = {
   obtenerTodos,
   obtenerPorId,
   crear,
   actualizar,
   eliminar,
+  obtenerPorUsuarioId,
 };

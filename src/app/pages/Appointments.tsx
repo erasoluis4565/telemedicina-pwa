@@ -1,62 +1,125 @@
-import { useState } from "react";
-import { Calendar, Clock, Video, MapPin, Phone, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Calendar,
+  Clock,
+  Video,
+  MapPin,
+  Phone,
+  X,
+} from "lucide-react";
+
 import { Button } from "../components/Button";
 import { Card } from "../components/Card";
+import {
+  obtenerMisCitas,
+  cancelarCita,
+} from "../../services/cita.service";
 
 export function Appointments() {
-  const [appointments, setAppointments] = useState([
-    {
-      id: 1,
-      doctor: "Dr. María González",
-      specialty: "Medicina General",
-      date: "15 Mayo 2026",
-      time: "10:00 AM",
-      type: "video",
-      status: "upcoming",
-    },
-    {
-      id: 2,
-      doctor: "Dr. Carlos Ramírez",
-      specialty: "Cardiología",
-      date: "20 Mayo 2026",
-      time: "3:00 PM",
-      type: "presencial",
-      location: "Clínica Central, Consultorio 205",
-      status: "upcoming",
-    },
-    {
-      id: 3,
-      doctor: "Dra. Ana Martínez",
-      specialty: "Geriatría",
-      date: "5 Mayo 2026",
-      time: "11:00 AM",
-      type: "video",
-      status: "completed",
-    },
-  ]);
 
-  const [activeTab, setActiveTab] = useState<"upcoming" | "completed">("upcoming");
+  const [appointments, setAppointments] = useState<any[]>([]);
 
-  const handleCancel = (id: number) => {
-    if (confirm("¿Estás seguro de que deseas cancelar esta cita?")) {
-      setAppointments(appointments.filter((apt) => apt.id !== id));
-    }
+  const [activeTab, setActiveTab] =
+    useState<"upcoming" | "completed">(
+      "upcoming"
+    );
+
+  useEffect(() => {
+
+    const cargarCitas = async () => {
+
+      try {
+
+        const citas =
+          await obtenerMisCitas();
+
+        setAppointments(citas);
+
+      } catch (error) {
+
+        console.error(error);
+
+      }
+
+    };
+
+    cargarCitas();
+
+  }, []);
+
+  const handleCancel = async (
+  id: string
+  ) => {
+
+    const confirmar = window.confirm(
+    "¿Deseas cancelar esta cita?"
+    );
+
+    if (!confirmar) return;
+
+    try {
+
+      await cancelarCita(id);
+
+      const citas =
+        await obtenerMisCitas();
+
+      setAppointments(citas);
+
+      alert(
+        "Cita cancelada correctamente."
+      );
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert(
+      "No fue posible cancelar la cita."
+      );
+
+   }
+
   };
 
-  const filteredAppointments = appointments.filter(
-    (apt) => apt.status === activeTab
-  );
+  const filteredAppointments =
+    appointments.filter((apt) => {
+
+      if (activeTab === "upcoming") {
+
+        return (
+          apt.estado === "PENDIENTE" ||
+          apt.estado === "CONFIRMADA"
+        );
+
+      }
+
+      return apt.estado === "COMPLETADA";
+
+    });
 
   return (
+
     <div className="space-y-8 max-w-4xl mx-auto">
+
       <div>
-        <h1 className="mb-2">Mis Citas</h1>
-        <p className="text-muted-foreground">Gestiona tus consultas médicas</p>
+
+        <h1 className="mb-2">
+          Mis Citas
+        </h1>
+
+        <p className="text-muted-foreground">
+          Gestiona tus consultas médicas
+        </p>
+
       </div>
 
       <div className="flex gap-4 border-b-2 border-border pb-1">
+
         <button
-          onClick={() => setActiveTab("upcoming")}
+          onClick={() =>
+            setActiveTab("upcoming")
+          }
           className={`
             px-6 py-4 rounded-t-xl transition-all duration-200
             focus:outline-none focus:ring-4 focus:ring-primary/30
@@ -69,8 +132,11 @@ export function Appointments() {
         >
           Próximas
         </button>
+
         <button
-          onClick={() => setActiveTab("completed")}
+          onClick={() =>
+            setActiveTab("completed")
+          }
           className={`
             px-6 py-4 rounded-t-xl transition-all duration-200
             focus:outline-none focus:ring-4 focus:ring-primary/30
@@ -83,84 +149,243 @@ export function Appointments() {
         >
           Completadas
         </button>
+
       </div>
 
       <div className="space-y-4">
+
         {filteredAppointments.length > 0 ? (
+
           filteredAppointments.map((appointment) => (
-            <Card key={appointment.id}>
+
+            <Card key={appointment._id}>
+
               <div className="space-y-4">
+
                 <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-4 flex-1 min-w-0">
+
+                  <div className="flex items-start gap-4 flex-1">
+
                     <div className="flex-shrink-0 w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center">
-                      {appointment.type === "video" ? (
-                        <Video size={32} className="text-primary" strokeWidth={2.5} />
+
+                      {appointment.tipoConsulta ===
+                      "VIRTUAL" ? (
+
+                        <Video
+                          size={32}
+                          className="text-primary"
+                        />
+
                       ) : (
-                        <MapPin size={32} className="text-secondary" strokeWidth={2.5} />
+
+                        <MapPin
+                          size={32}
+                          className="text-secondary"
+                        />
+
                       )}
+
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="mb-1">{appointment.doctor}</h3>
-                      <p className="text-muted-foreground mb-3">{appointment.specialty}</p>
+
+                    <div className="flex-1">
+
+                      <h3 className="mb-1">
+
+                        Dr.{" "}
+                        {
+                          appointment
+                            .medicoId
+                            ?.usuarioId
+                            ?.nombre
+                        }{" "}
+                        {
+                          appointment
+                            .medicoId
+                            ?.usuarioId
+                            ?.apellido
+                        }
+
+                      </h3>
+
+                      <p className="text-muted-foreground mb-3">
+
+                        {
+                          appointment
+                            .medicoId
+                            ?.especialidad
+                        }
+
+                      </p>
+
                       <div className="space-y-2">
+
                         <div className="flex items-center gap-2 text-muted-foreground">
+
                           <Calendar size={20} />
-                          <span>{appointment.date}</span>
+
+                          <span>
+
+                            {new Date(
+                              appointment.fecha
+                            ).toLocaleDateString(
+                              "es-EC"
+                            )}
+
+                          </span>
+
                         </div>
+
                         <div className="flex items-center gap-2 text-muted-foreground">
+
                           <Clock size={20} />
-                          <span>{appointment.time}</span>
+
+                          <span>
+
+                            {appointment.hora}
+
+                          </span>
+
                         </div>
-                        {appointment.location && (
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <MapPin size={20} />
-                            <span>{appointment.location}</span>
-                          </div>
-                        )}
+
+                        <div className="flex items-center gap-2">
+
+                          <strong>
+                            Motivo:
+                          </strong>
+
+                          <span>
+                            {
+                              appointment.motivo
+                            }
+                          </span>
+
+                        </div>
+
+                        <div>
+
+                          <span
+                            className={`inline-flex rounded-full px-3 py-1 text-sm font-medium
+                            ${
+                              appointment.estado ===
+                              "PENDIENTE"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : appointment.estado ===
+                                  "CONFIRMADA"
+                                ? "bg-blue-100 text-blue-700"
+                                : appointment.estado ===
+                                  "COMPLETADA"
+                                ? "bg-green-100 text-green-700"
+                                : "bg-red-100 text-red-700"
+                            }`}
+                          >
+
+                            {
+                              appointment.estado
+                            }
+
+                          </span>
+
+                        </div>
+
                       </div>
+
                     </div>
+
                   </div>
+
                 </div>
 
-                {appointment.status === "upcoming" && (
+                {activeTab ===
+                  "upcoming" && (
+
                   <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t-2 border-border">
-                    {appointment.type === "video" && (
-                      <Button variant="primary" size="default" className="flex-1">
-                        <Video size={24} />
+
+                    {appointment.tipoConsulta ===
+                    "VIRTUAL" ? (
+
+                      <Button
+                        variant="primary"
+                        className="flex-1"
+                      >
+
+                        <Video
+                          size={22}
+                        />
+
                         Unirse a videollamada
+
                       </Button>
-                    )}
-                    {appointment.type === "presencial" && (
-                      <Button variant="secondary" size="default" className="flex-1">
-                        <Phone size={24} />
+
+                    ) : (
+
+                      <Button
+                        variant="secondary"
+                        className="flex-1"
+                      >
+
+                        <Phone
+                          size={22}
+                        />
+
                         Llamar a clínica
+
                       </Button>
+
                     )}
+
                     <Button
                       variant="outline"
-                      size="default"
-                      onClick={() => handleCancel(appointment.id)}
-                      className="sm:w-auto"
+                      onClick={() =>
+                        handleCancel(
+                          appointment._id
+                        )
+                      }
                     >
-                      <X size={24} />
+
+                      <X
+                        size={22}
+                      />
+
                       Cancelar
+
                     </Button>
+
                   </div>
+
                 )}
+
               </div>
+
             </Card>
+
           ))
+
         ) : (
+
           <Card className="text-center py-12">
-            <Calendar size={48} className="text-muted-foreground mx-auto mb-4" />
+
+            <Calendar
+              size={48}
+              className="text-muted-foreground mx-auto mb-4"
+            />
+
             <p className="text-muted-foreground">
-              {activeTab === "upcoming"
+
+              {activeTab ===
+              "upcoming"
                 ? "No tienes citas próximas"
                 : "No hay citas completadas"}
+
             </p>
+
           </Card>
+
         )}
+
       </div>
+
     </div>
+
   );
+
 }

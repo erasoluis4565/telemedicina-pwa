@@ -43,8 +43,36 @@ const obtenerPorId = async (req, res, next) => {
   }
 };
 
+const perfil = async (req, res, next) => {
+
+  try {
+
+    const usuario = await service.obtenerPerfil(
+      req.usuario.id
+    );
+
+    if (!usuario) {
+      return res.status(404).json({
+        mensaje: "Usuario no encontrado.",
+      });
+    }
+
+    const { passwordHash, ...usuarioSinPassword } =
+      usuario.toObject();
+
+    res.json({
+      data: usuarioSinPassword,
+    });
+
+  } catch (error) {
+    next(error);
+  }
+
+};
+
 module.exports = {
   crear,
   listar,
   obtenerPorId,
+  perfil,
 };

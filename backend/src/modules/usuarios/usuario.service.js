@@ -37,8 +37,15 @@ const obtenerPorId = async (id) => {
   return await repository.obtenerPorId(id);
 };
 
+const obtenerPerfil = async (usuarioId) => {
+
+  return await repository.obtenerPorId(usuarioId);
+
+};
+
 module.exports = {
   crear,
   listar,
   obtenerPorId,
+  obtenerPerfil,
 };
