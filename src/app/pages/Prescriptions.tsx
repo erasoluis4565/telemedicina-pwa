@@ -1,46 +1,46 @@
 import { Pill, Download, Calendar, Clock, AlertCircle } from "lucide-react";
 import { Button } from "../components/Button";
-import { Card, CardHeader, CardTitle, CardContent } from "../components/Card";
+import { Card } from "../components/Card";
+import { useEffect, useState } from "react";
+import { obtenerMisRecetas } from "../../services/receta.service";
 
 export function Prescriptions() {
-  const prescriptions = [
-    {
-      id: 1,
-      medication: "Losartán 50mg",
-      dosage: "1 tableta",
-      frequency: "Cada 12 horas",
-      duration: "30 días",
-      doctor: "Dr. Carlos Ramírez",
-      date: "1 Mayo 2026",
-      instructions: "Tomar con alimentos. No suspender sin consultar al médico.",
-      active: true,
-    },
-    {
-      id: 2,
-      medication: "Metformina 850mg",
-      dosage: "1 tableta",
-      frequency: "Cada 8 horas",
-      duration: "60 días",
-      doctor: "Dra. Ana Martínez",
-      date: "28 Abril 2026",
-      instructions: "Tomar después de las comidas principales.",
-      active: true,
-    },
-    {
-      id: 3,
-      medication: "Omeprazol 20mg",
-      dosage: "1 cápsula",
-      frequency: "1 vez al día",
-      duration: "14 días",
-      doctor: "Dr. María González",
-      date: "15 Abril 2026",
-      instructions: "Tomar en ayunas, 30 minutos antes del desayuno.",
-      active: false,
-    },
-  ];
+  const [prescriptions, setPrescriptions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const activePrescriptions = prescriptions.filter((p) => p.active);
-  const inactivePrescriptions = prescriptions.filter((p) => !p.active);
+  const obtenerRecetas = async () => {
+
+    try {
+
+      const recetas = await obtenerMisRecetas();
+
+      setPrescriptions(recetas);
+
+    } catch (error) {
+
+      console.error(error);
+
+    } finally {
+      setLoading(false);
+    }
+
+  };
+
+  useEffect(() => {
+
+    obtenerRecetas();
+
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <p className="text-muted-foreground">
+          Cargando recetas...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
@@ -62,54 +62,120 @@ export function Prescriptions() {
       </Card>
 
       <div>
-        <h2 className="mb-6">Recetas Activas</h2>
+        <h2 className="mb-6">Mis recetas médicas</h2>
         <div className="space-y-4">
-          {activePrescriptions.length > 0 ? (
-            activePrescriptions.map((prescription) => (
-              <Card key={prescription.id}>
+          {prescriptions.length > 0 ? (
+            prescriptions.map((prescription) => (
+              <Card key={prescription._id}>
                 <div className="space-y-4">
                   <div className="flex items-start gap-4">
                     <div className="flex-shrink-0 w-16 h-16 bg-secondary/10 rounded-2xl flex items-center justify-center">
                       <Pill size={32} className="text-secondary" strokeWidth={2.5} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="mb-1">{prescription.medication}</h3>
+                      <h3 className="mb-1">
+                        Dr. {prescription.medicoId.usuarioId.nombre}{" "}
+                        {prescription.medicoId.usuarioId.apellido}
+                      </h3>
                       <p className="text-muted-foreground mb-3">
-                        Recetado por {prescription.doctor}
+                        {prescription.medicoId.especialidad}
                       </p>
                       <div className="flex items-center gap-2 text-muted-foreground mb-2">
                         <Calendar size={20} />
-                        <span>{prescription.date}</span>
+                        <span>
+                          {new Date(
+                            prescription.citaId.fecha
+                          ).toLocaleDateString("es-ES")}
+                        </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-muted rounded-xl">
-                    <div>
-                      <p className="text-muted-foreground mb-1">Dosis</p>
-                      <p>{prescription.dosage}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground mb-1">Frecuencia</p>
-                      <p className="flex items-center gap-2">
-                        <Clock size={20} />
-                        {prescription.frequency}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground mb-1">Duración</p>
-                      <p>{prescription.duration}</p>
+                  <div className="p-4 bg-muted rounded-xl">
+
+                    <h3 className="mb-4">
+                      Medicamentos Recetados
+                    </h3>
+
+                    <div className="space-y-4">
+
+                      {prescription.medicamentos.map((med: any) => (
+
+                        <div
+                          key={med._id}
+                          className="border-2 border-border rounded-xl p-4 bg-background"
+                        >
+
+                          <h4 className="mb-2">
+                            {med.nombre}
+                          </h4>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+                            <div>
+                              <p className="text-muted-foreground">
+                                Dosis
+                              </p>
+                              <p>{med.dosis}</p>
+                            </div>
+
+                            <div>
+                              <p className="text-muted-foreground">
+                                Frecuencia
+                              </p>
+
+                              <p className="flex items-center gap-2">
+                                <Clock size={18} />
+                                {med.frecuencia}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">
+                                Duración
+                              </p>
+                              <p>{med.duracion}</p>
+                            </div>
+
+                          </div>
+
+                        </div>
+
+                      ))}
+
                     </div>
                   </div>
+                  <div className="border-2 border-border rounded-xl p-4">
 
-                  <div className="p-4 bg-accent rounded-xl">
-                    <p className="text-muted-foreground mb-2">Instrucciones:</p>
-                    <p>{prescription.instructions}</p>
+                    <h3 className="mb-2">
+                      Diagnóstico
+                    </h3>
+
+                    <p>
+                      {prescription.diagnostico}
+                    </p>
+
                   </div>
 
-                  <Button variant="outline" size="default" className="w-full sm:w-auto">
+                  <div className="border-2 border-border rounded-xl p-4">
+
+                    <h3 className="mb-2">
+                      Recomendaciones
+                    </h3>
+
+                    <p>
+                      {prescription.recomendaciones}
+                    </p>
+
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="default"
+                    className="w-full"
+                    disabled
+                  >
                     <Download size={24} />
-                    Descargar receta
+                    Descarga disponible próximamente
                   </Button>
                 </div>
               </Card>
@@ -117,41 +183,11 @@ export function Prescriptions() {
           ) : (
             <Card className="text-center py-12">
               <Pill size={48} className="text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">No tienes recetas activas</p>
+              <p className="text-muted-foreground">No tienes recetas registradas.</p>
             </Card>
           )}
         </div>
       </div>
-
-      {inactivePrescriptions.length > 0 && (
-        <div>
-          <h2 className="mb-6">Recetas Anteriores</h2>
-          <div className="space-y-4">
-            {inactivePrescriptions.map((prescription) => (
-              <Card key={prescription.id} className="opacity-60">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-16 h-16 bg-muted rounded-2xl flex items-center justify-center">
-                    <Pill size={32} className="text-muted-foreground" strokeWidth={2.5} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="mb-1">{prescription.medication}</h3>
-                    <p className="text-muted-foreground mb-2">
-                      Recetado por {prescription.doctor}
-                    </p>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Calendar size={20} />
-                      <span>{prescription.date}</span>
-                    </div>
-                  </div>
-                  <Button variant="ghost" size="default">
-                    <Download size={24} />
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

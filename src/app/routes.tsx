@@ -6,7 +6,6 @@ import { BookAppointment } from "./pages/BookAppointment";
 import { Appointments } from "./pages/Appointments";
 import { Prescriptions } from "./pages/Prescriptions";
 import { Profile } from "./pages/Profile";
-import { Confirmation } from "./pages/Confirmation";
 import { Offline } from "./pages/Offline";
 import { Layout } from "./components/Layout";
 import { Register } from "./pages/Register";
@@ -43,7 +42,6 @@ export const router = createBrowserRouter([
       { path: "appointments", element: <Appointments /> },
       { path: "prescriptions", element: <Prescriptions /> },
       { path: "profile", element: <Profile /> },
-      { path: "confirmation", element: <Confirmation /> },
     ],
   },
   {
