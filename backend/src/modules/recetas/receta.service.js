@@ -20,12 +20,6 @@ const medico = await medicoRepository.obtenerPorUsuarioId(
   usuarioLogueado.id
 );
 
-console.log("=========== CITA ===========");
-console.log(cita);
-
-console.log("=========== MEDICO ===========");
-console.log(medico);
-
 if (!medico) {
   throw new Error(
     "El usuario autenticado no es un médico."

@@ -24,55 +24,93 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-  registerType: "autoUpdate",
+      registerType: "autoUpdate",
 
-  includeAssets: [
-    "favicon.ico",
-    "apple-touch-icon.png",
-    "masked-icon.svg"
-  ],
-
-  manifest: {
-    name: "TeleSalud",
-    short_name: "TeleSalud",
-
-    description:
-      "Aplicación PWA de Telemedicina para Adultos Mayores.",
-
-    theme_color: "#2563eb",
-
-    background_color: "#ffffff",
-
-    display: "standalone",
-
-    orientation: "portrait",
-
-    start_url: "/",
-
-    scope: "/",
-
-    lang: "es",
-
-    icons: [
-      {
-        src: "/pwa-192x192.png",
-        sizes: "192x192",
-        type: "image/png",
+      devOptions: {
+        enabled: true,
       },
-      {
-        src: "/pwa-512x512.png",
-        sizes: "512x512",
-        type: "image/png",
+
+      includeAssets: [
+        "favicon.ico",
+        "apple-touch-icon.png",
+        "masked-icon.svg"
+      ],
+
+      manifest: {
+        name: "TeleSalud",
+        short_name: "TeleSalud",
+
+        description:
+          "Aplicación PWA de Telemedicina para Adultos Mayores.",
+
+        theme_color: "#2563eb",
+
+        background_color: "#ffffff",
+
+        display: "standalone",
+
+        orientation: "portrait",
+
+        start_url: "/",
+
+        scope: "/",
+
+        lang: "es",
+
+        icons: [
+          {
+            src: "/pwa-192x192.png",
+            sizes: "192x192",
+            type: "image/png",
+          },
+          {
+            src: "/pwa-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
+          },
+          {
+            src: "/pwa-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable",
+          },
+        ],
       },
-      {
-        src: "/pwa-512x512.png",
-        sizes: "512x512",
-        type: "image/png",
-        purpose: "maskable",
+
+      workbox: {
+
+        globPatterns: [
+          "**/*.{js,css,html,ico,png,svg}"
+        ],
+
+        runtimeCaching: [
+
+          {
+
+            urlPattern: /^https:\/\/.*/i,
+
+            handler: "NetworkFirst",
+
+            options: {
+
+              cacheName: "api-cache",
+
+              expiration: {
+
+                maxEntries: 50,
+
+                maxAgeSeconds: 60 * 60 * 24,
+
+              },
+
+            },
+
+          },
+
+        ],
+
       },
-    ],
-  },
-}),
+    }),
   ],
   resolve: {
     alias: {

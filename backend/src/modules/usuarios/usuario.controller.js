@@ -70,9 +70,54 @@ const perfil = async (req, res, next) => {
 
 };
 
+const actualizarPerfil = async (req, res, next) => {
+
+  try {
+
+    const usuario = await service.actualizarPerfil(
+      req.usuario.id,
+      req.body
+    );
+
+    res.json({
+      mensaje: "Perfil actualizado correctamente.",
+      data: usuario,
+    });
+
+  } catch (error) {
+
+    next(error);
+
+  }
+
+};
+
+const cambiarPassword = async (req, res, next) => {
+
+  try {
+
+    await service.cambiarPassword(
+      req.usuario.id,
+      req.body
+    );
+
+    res.json({
+      mensaje: "Contraseña actualizada correctamente.",
+    });
+
+  } catch (error) {
+
+    next(error);
+
+  }
+
+};
+
 module.exports = {
   crear,
   listar,
   obtenerPorId,
   perfil,
+  actualizarPerfil,
+  cambiarPassword,
 };

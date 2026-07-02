@@ -43,9 +43,70 @@ const obtenerPerfil = async (usuarioId) => {
 
 };
 
+const actualizarPerfil = async (
+  usuarioId,
+  data
+) => {
+
+  const datosActualizar = {
+
+    nombre: data.nombre,
+
+    apellido: data.apellido,
+
+    telefono: data.telefono,
+
+  };
+
+  return await repository.actualizar(
+    usuarioId,
+    datosActualizar
+  );
+
+};
+
+const cambiarPassword = async (
+  usuarioId,
+  data
+) => {
+
+  const usuario =
+    await repository.obtenerPorId(usuarioId);
+
+  if (!usuario) {
+    throw new Error("Usuario no encontrado.");
+  }
+
+  const coincide =
+    await bcrypt.compare(
+      data.passwordActual,
+      usuario.passwordHash
+    );
+
+  if (!coincide) {
+    throw new Error("La contraseña actual es incorrecta.");
+  }
+
+  const passwordHash =
+    await bcrypt.hash(
+      data.passwordNueva,
+      10
+    );
+
+  return await repository.actualizar(
+    usuarioId,
+    {
+      passwordHash,
+    }
+  );
+
+};
+
 module.exports = {
   crear,
   listar,
   obtenerPorId,
   obtenerPerfil,
+  actualizarPerfil,
+  cambiarPassword,
 };

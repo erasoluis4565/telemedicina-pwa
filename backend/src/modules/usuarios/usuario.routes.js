@@ -18,6 +18,18 @@ router.get(
   controller.perfil
 );
 
+router.put(
+  "/perfil",
+  verificarToken,
+  controller.actualizarPerfil
+);
+
+router.put(
+  "/password",
+  verificarToken,
+  controller.cambiarPassword
+);
+
 router.get(
     "/:id",
     verificarToken,
