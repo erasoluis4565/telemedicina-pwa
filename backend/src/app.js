@@ -15,7 +15,6 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api", routes);
-app.use(errorHandler);
 
 // Ruta de prueba
 app.get("/", (req, res) => {
@@ -23,5 +22,7 @@ app.get("/", (req, res) => {
         mensaje: "API TeleSalud funcionando correctamente 🚀"
     });
 });
+
+app.use(errorHandler);
 
 module.exports = app;

@@ -35,7 +35,12 @@ describe("Auth Controller", () => {
       };
 
       authService.registrar.mockResolvedValue({
-        id: 1,
+        toObject: () => ({
+          _id: "1",
+          nombre: "Luis",
+          email: "test@test.com",
+          passwordHash: "hash",
+        }),
       });
 
       await authController.registrar(
@@ -52,7 +57,12 @@ describe("Auth Controller", () => {
 
       expect(res.json)
         .toHaveBeenCalledWith({
-          id: 1,
+          mensaje: "Usuario registrado correctamente.",
+          data: {
+            _id: "1",
+            nombre: "Luis",
+            email: "test@test.com",
+          },
         });
 
     });
@@ -87,6 +97,16 @@ describe("Auth Controller", () => {
 
       authService.login.mockResolvedValue({
         token: "abc123",
+
+        usuario: {
+          toObject: () => ({
+            _id: "1",
+            nombre: "Luis",
+            email: "test@test.com",
+            passwordHash: "hash",
+          }),
+        },
+
       });
 
       await authController.login(
@@ -100,7 +120,13 @@ describe("Auth Controller", () => {
 
       expect(res.json)
         .toHaveBeenCalledWith({
+          mensaje: "Inicio de sesión correcto.",
           token: "abc123",
+          usuario: {
+            _id: "1",
+            nombre: "Luis",
+            email: "test@test.com",
+          },
         });
 
     });
