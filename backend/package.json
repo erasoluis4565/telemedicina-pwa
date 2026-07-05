@@ -6,8 +6,8 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "test": "jest --runInBand",
-    "coverage": "jest --coverage",
+    "test": "jest --runInBand --detectOpenHandles --forceExit",
+    "coverage": "jest --coverage --runInBand --detectOpenHandles --forceExit",
     "cy:open": "cypress open",
     "cy:run": "cypress run"
   },
