@@ -1,14 +1,14 @@
-describe("Auth E2E Test", () => {
+describe("Flujo de autenticación", () => {
 
   it("Debe iniciar sesión correctamente", () => {
 
-    cy.request("POST", "http://localhost:3000/api/auth/login", {
-      email: "test@correo.com",
+    cy.request("POST", "/api/auth/login", {
+      email: "maria05@gmail.com",
       password: "123456"
-    }).then((res) => {
+    }).then((response) => {
 
-      expect(res.status).to.eq(200);
-      expect(res.body).to.have.property("token");
+      expect(response.status).to.eq(200);
+      expect(response.body).to.have.property("token");
 
     });
 
