@@ -9,6 +9,7 @@ module.exports = {
         "src/**/*.js",
         "!src/server.js",
         "!src/app.js",
+        "!src/**/*.model.js"
     ],
 
     testMatch: [
